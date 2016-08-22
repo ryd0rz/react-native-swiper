@@ -7,19 +7,19 @@ import {
   StyleSheet,
   Platform,
   TouchableOpacity,
-  Text,
+  Text
 } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    overflow: 'hidden',
+    overflow: 'hidden'
   },
   sceneContainerBase: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: 'row'
   },
-  pagination_x: {
+  paginationX: {
     position: 'absolute',
     bottom: 25,
     left: 0,
@@ -28,10 +28,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: 'transparent'
   },
-
-  pagination_y: {
+  paginationY: {
     position: 'absolute',
     right: 15,
     top: 0,
@@ -40,9 +39,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: 'transparent'
   },
-
   title: {
     height: 30,
     justifyContent: 'center',
@@ -55,9 +53,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
 
     borderColor: 'rgb(255,0,0)',
-    borderWidth: 1,
+    borderWidth: 1
   },
-
   buttonWrapper: {
     backgroundColor: 'transparent',
     flexDirection: 'row',
@@ -68,15 +65,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'center'
   },
-
   buttonText: {
     fontSize: 50,
     color: '#007aff',
-    fontFamily: 'Arial',
+    fontFamily: 'Arial'
   },
-
   activeDot: {
     backgroundColor: '#007aff',
     width: 8,
@@ -85,9 +80,8 @@ const styles = StyleSheet.create({
     marginLeft: 3,
     marginRight: 3,
     marginTop: 3,
-    marginBottom: 3,
+    marginBottom: 3
   },
-
   notActiveDot: {
     backgroundColor: 'rgba(0,0,0,.2)',
     width: 8,
@@ -96,8 +90,8 @@ const styles = StyleSheet.create({
     marginLeft: 3,
     marginRight: 3,
     marginTop: 3,
-    marginBottom: 3,
-  },
+    marginBottom: 3
+  }
 });
 
 import TimerMixin from 'react-timer-mixin';
@@ -112,6 +106,7 @@ const vw = windowWidth / 100;
 const vh = windowHeight / 100;
 
 class Swiper extends React.Component {
+
   constructor(props) {
     super(props);
 
@@ -133,7 +128,7 @@ class Swiper extends React.Component {
       index: props.index,
       total: totalChildren,
       scrollValue: new Animated.Value(props.index),
-      dir: props.horizontal === false ? 'y' : 'x',
+      dir: props.horizontal === false ? 'y' : 'x'
     };
 
     this.state.scrollValue.setOffset(offset);
@@ -143,14 +138,14 @@ class Swiper extends React.Component {
         onMoveShouldSetPanResponder: this.onMoveShouldSetPanResponderH,
         onPanResponderRelease: this.onReleasePanResponderH,
         onPanResponderTerminate: this.onReleasePanResponderH,
-        onPanResponderMove: this.onPanResponderMoveH,
+        onPanResponderMove: this.onPanResponderMoveH
       });
     } else {
       this.panResponder = PanResponder.create({
         onMoveShouldSetPanResponder: this.onMoveShouldSetPanResponderV,
         onPanResponderRelease: this.onReleasePanResponderV,
         onPanResponderTerminate: this.onReleasePanResponderV,
-        onPanResponderMove: this.onPanResponderMoveV,
+        onPanResponderMove: this.onPanResponderMoveV
       });
     }
   }
@@ -246,7 +241,7 @@ class Swiper extends React.Component {
     const offsetWindowRatio = (windowWidth - this.props.pageWidth) / vw / 2 / 100;
     const scaleToPageRatio = windowWidth / this.props.pageWidth;
 
-    return - offsetWindowRatio * scaleToPageRatio;
+    return -offsetWindowRatio * scaleToPageRatio;
   }
 
   getScrollPageOffsetV() {
@@ -256,14 +251,14 @@ class Swiper extends React.Component {
     const offsetWindowRatio = (windowHeight - this.props.pageHeight) / vh / 2 / 100;
     const scaleToPageRatio = windowHeight / this.props.pageHeight;
 
-    return - offsetWindowRatio * scaleToPageRatio;
+    return -offsetWindowRatio * scaleToPageRatio;
   }
 
   updateIndex(index, vx, relativeGestureDistance) {
     const distanceThreshold = 0.5;
 
-    if (relativeGestureDistance < - distanceThreshold ||
-        (relativeGestureDistance < 0 && vx <= - this.vxThreshold)) {
+    if (relativeGestureDistance < -distanceThreshold ||
+        (relativeGestureDistance < 0 && vx <= -this.vxThreshold)) {
       return index + 1;
     }
 
@@ -276,17 +271,19 @@ class Swiper extends React.Component {
 
   scrollTo(pageNumber) {
     //    const newPageNumber = Math.max(0, Math.min(pageNumber, this.props.children.length - 1));
-    const newPageNumber = pageNumber >= 0 ? pageNumber % this.state.total : this.props.children.length - 1;
-    this.setState({
-      index: newPageNumber,
-    });
+    if (this.props.loop || (pageNumber >= 0 && pageNumber < this.state.total)) {
+      const newPageNumber = pageNumber >= 0 ? pageNumber % this.state.total : this.props.children.length - 1;
+      this.setState({
+        index: newPageNumber
+      });
 
-    Animated.timing(this.state.scrollValue,
-                    { toValue: newPageNumber, duration: this.props.scrollDurationMs }).start();
+      Animated.timing(this.state.scrollValue,
+                      { toValue: newPageNumber, duration: this.props.scrollDurationMs }).start();
 
-    const status = Object.assign({}, this.state, { index: newPageNumber });
+      const status = Object.assign({}, this.state, { index: newPageNumber });
 
-    this.onScrollEnd(status);
+      this.onScrollEnd(status);
+    }
   }
 
   scrollBy(indexOffset) {
@@ -294,9 +291,7 @@ class Swiper extends React.Component {
   }
 
   autoplay() {
-    if (!Array.isArray(this.props.children)
-        || !this.props.autoplay
-    ) {
+    if (!Array.isArray(this.props.children) || !this.props.autoplay) {
       return;
     }
 
@@ -309,23 +304,23 @@ class Swiper extends React.Component {
 
   renderDotPagination() {
     // By default, dots only show when `total` > 2
-    if (this.state.total <= 1) return null;
+    if (this.state.total <= 1) {
+      return null;
+    }
 
     let dots = [];
     const ActiveDot = this.props.activeDot || <View style={styles.activeDot} />;
     const Dot = this.props.dot || <View style={styles.notActiveDot} />;
 
     for (let i = 0; i < this.state.total; i++) {
-      dots.push(i === this.state.index
-              ? React.cloneElement(ActiveDot, { key: i })
-              : React.cloneElement(Dot, { key: i })
+      dots.push(i === this.state.index ? React.cloneElement(ActiveDot, { key: i }) : React.cloneElement(Dot, { key: i })
       );
     }
 
     return (
       <View
         pointerEvents={'none'}
-        style={[styles['pagination_' + this.state.dir],
+        style={[styles[`pagination${this.state.dir.toUpperCase()}`],
                 this.props.paginationStyle]}
       >
         {dots}
@@ -334,7 +329,9 @@ class Swiper extends React.Component {
   }
 
   renderPagination() {
-    if (!this.props.showPagination) return null;
+    if (!this.props.showsPagination) {
+      return null;
+    }
 
     if (this.props.renderPagination) {
       return this.props.renderPagination(this.state.index, this.props.children.length);
@@ -361,7 +358,7 @@ class Swiper extends React.Component {
     }
 
     return (
-      <TouchableOpacity onPress={() => button !== null && this.scrollBy.call(this, 1)}>
+      <TouchableOpacity onPress={() => button !== null && this.scrollBy.bind(this, 1)}>
         <View>
           {button}
         </View>
@@ -377,7 +374,7 @@ class Swiper extends React.Component {
     }
 
     return (
-      <TouchableOpacity onPress={() => button !== null && this.scrollBy.call(this, -1)}>
+      <TouchableOpacity onPress={() => button !== null && this.scrollBy.bind(this, -1)}>
         <View>
           {button}
         </View>
@@ -392,7 +389,7 @@ class Swiper extends React.Component {
         style={[
           styles.buttonWrapper,
           { width: windowWidth, height: windowHeight },
-          this.props.buttonWrapperStyle,
+          this.props.buttonWrapperStyle
         ]}
       >
         {this.renderPrevButton()}
@@ -405,18 +402,18 @@ class Swiper extends React.Component {
     const pageStyle = {
       width: this.props.pageWidth,
       height: this.props.pageHeight,
-      backgroundColor: 'transparent',
+      backgroundColor: 'transparent'
     };
 
     const pages = this.props.children.map((page, index) => (
       <View style={pageStyle} key={index}>{page}</View>));
 
     const translateX = this.state.scrollValue.interpolate({
-      inputRange: [0, 1], outputRange: [0, -this.props.pageWidth],
+      inputRange: [0, 1], outputRange: [0, -this.props.pageWidth]
     });
 
     const translateY = this.state.scrollValue.interpolate({
-      inputRange: [0, 1], outputRange: [0, -this.props.pageHeight],
+      inputRange: [0, 1], outputRange: [0, -this.props.pageHeight]
     });
 
     const transform =
@@ -426,12 +423,8 @@ class Swiper extends React.Component {
       flex: 1,
       flexDirection: this.props.horizontal ? 'row' : 'column',
       width: this.props.horizontal ? this.props.pageWidth * this.props.children.length : null,
-      height: this.props.horizontal ? null : this.props.pageHeight * this.props.children.length,
+      height: this.props.horizontal ? null : this.props.pageHeight * this.props.children.length
     };
-
-    const title = this.renderTitle();
-    const buttons = this.renderButtons();
-    const pagination = this.renderPagination();
 
     return (
       <View
@@ -443,36 +436,39 @@ class Swiper extends React.Component {
         >
           {pages}
         </Animated.View>
-        {pagination}
-        {title}
-        {buttons}
+        {this.props.showsPagination && this.renderPagination()}
+        {this.renderTitle()}
+        {this.props.showsButtons && this.renderButtons()}
       </View>
     );
   }
+
 }
 
 Swiper.propTypes = {
-  children: React.PropTypes.node.isRequired,
-  index: React.PropTypes.number,
-  threshold: React.PropTypes.number,
-  onMomentumScrollEnd: React.PropTypes.func,
-  pageWidth: React.PropTypes.number,
-  pageHeight: React.PropTypes.number,
-  scrollDurationMs: React.PropTypes.number,
-  renderPagination: React.PropTypes.func,
-  onScrollBeginDrag: React.PropTypes.func,
-  scrollEnabled: React.PropTypes.bool,
-  horizontal: React.PropTypes.bool,
-  loop: React.PropTypes.bool,
+  activeDot: React.PropTypes.element,
   autoplay: React.PropTypes.bool,
   autoplayDirection: React.PropTypes.bool,
   autoplayTimeout: React.PropTypes.number,
-  buttonWrapperStyle: View.propTypes.style,
-  prevButton: React.PropTypes.element,
-  nextButton: React.PropTypes.element,
-  showPagination: React.PropTypes.bool,
+  buttonWrapperStyle: React.PropTypes.object,
+  children: React.PropTypes.node.isRequired,
   dot: React.PropTypes.element,
-  activeDot: React.PropTypes.element,
+  horizontal: React.PropTypes.bool,
+  index: React.PropTypes.number,
+  loop: React.PropTypes.bool,
+  nextButton: React.PropTypes.element,
+  onMomentumScrollEnd: React.PropTypes.func,
+  onScrollBeginDrag: React.PropTypes.func,
+  pageHeight: React.PropTypes.number,
+  pageWidth: React.PropTypes.number,
+  paginationStyle: React.PropTypes.object,
+  prevButton: React.PropTypes.element,
+  renderPagination: React.PropTypes.func,
+  scrollDurationMs: React.PropTypes.number,
+  scrollEnabled: React.PropTypes.bool,
+  showsButtons: React.PropTypes.bool,
+  showsPagination: React.PropTypes.bool,
+  threshold: React.PropTypes.number
 };
 
 Swiper.defaultProps = {
@@ -493,7 +489,8 @@ Swiper.defaultProps = {
   buttonWrapperStyle: {},
   prevButton: null,
   nextButton: null,
-  showPagination: false,
+  showsButtons: true,
+  showsPagination: false
 };
 
 reactMixin.onClass(Swiper, TimerMixin);
