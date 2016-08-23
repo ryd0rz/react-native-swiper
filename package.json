@@ -1,11 +1,11 @@
 {
-  "name": "@levelupdevelopment/react-native-swiper",
+  "name": "react-native-swiper",
   "keywords": [
     "react-component",
     "react-native",
     "ios"
   ],
-  "version": "2.0.1",
+  "version": "1.4.9",
   "description": "Swiper component for React Native.",
   "main": "dist/index.js",
   "scripts": {
