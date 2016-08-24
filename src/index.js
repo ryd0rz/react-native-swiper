@@ -135,11 +135,6 @@ class Swiper extends React.Component {
 
     if (props.horizontal) {
       this.panResponder = PanResponder.create({
-        onStartShouldSetResponderCapture: () => { return false; },
-        onMoveShouldSetResponderCapture: () => { return false; },
-        onMoveShouldSetPanResponderCapture: () => { return false; },
-        onStartShouldSetPanResponderCapture: () => { return false; },
-        onShouldBlockNativeResponder: () => { return false; },
         onMoveShouldSetPanResponder: this.onMoveShouldSetPanResponderH,
         onPanResponderRelease: this.onReleasePanResponderH,
         onPanResponderTerminate: this.onReleasePanResponderH,
@@ -147,15 +142,10 @@ class Swiper extends React.Component {
       });
     } else {
       this.panResponder = PanResponder.create({
-        onStartShouldSetResponderCapture: () => { return false; },
-        onMoveShouldSetResponderCapture: () => { return false; },
-        onMoveShouldSetPanResponderCapture: () => { return false; },
-        onStartShouldSetPanResponderCapture: () => { return false; },
-        onShouldBlockNativeResponder: () => { return false; },
-        onMoveShouldSetPanResponder: this.onMoveShouldSetPanResponderV,
-        onPanResponderRelease: this.onReleasePanResponderV,
-        onPanResponderTerminate: this.onReleasePanResponderV,
-        onPanResponderMove: this.onPanResponderMoveV
+        onMoveShouldSetPanResponder: this.onMoveShouldSetPanResponderV.bind(this),
+        onPanResponderRelease: this.onReleasePanResponderV.bind(this),
+        onPanResponderTerminate: this.onPanResponderTerminateV.bind(this),
+        onPanResponderMove: this.onPanResponderMoveV.bind(this)
       });
     }
   }
@@ -174,7 +164,15 @@ class Swiper extends React.Component {
   }
 
   onReleasePanResponderV(e, gestureState) {
-    console.log('react-native-scroller: onReleasePanResponderV');
+    const relativeGestureDistance = gestureState.dy / windowHeight;
+    const { vy } = gestureState;
+
+    const newIndex = this.updateIndex(this.state.index, vy, relativeGestureDistance);
+
+    this.scrollTo(newIndex);
+  }
+
+  onPanResponderTerminateV(e, gestureState) {
     const relativeGestureDistance = gestureState.dy / windowHeight;
     const { vy } = gestureState;
 
@@ -195,21 +193,17 @@ class Swiper extends React.Component {
       return true;
     }
 
-    if (threshold - Math.abs(gestureState.dx) > 0) {
-      return false;
-    }
     return false;
   }
 
   onMoveShouldSetPanResponderV(e, gestureState) {
-    console.log('react-native-scroller: onMoveShouldSetPanResponderV');
-    console.log('e: ');
-    console.log(e);
-    console.log('gestureState: ');
-    console.log(gestureState);
     const { threshold, scrollEnabled, responderTaken } = this.props;
 
     if (!scrollEnabled || responderTaken()) {
+      return false;
+    }
+
+    if (threshold - Math.abs(gestureState.dy) > 0) {
       return false;
     }
 
@@ -218,9 +212,6 @@ class Swiper extends React.Component {
       return true;
     }
 
-    if (threshold - Math.abs(gestureState.dy) > 0) {
-      return false;
-    }
     return false;
   }
 
@@ -234,7 +225,6 @@ class Swiper extends React.Component {
   }
 
   onPanResponderMoveV(e, gestureState) {
-    console.log('react-native-scroller: onPanResponderMoveV');
     const dy = gestureState.dy;
     const offsetY = -dy / this.props.pageHeight + this.state.index;
 
@@ -491,7 +481,7 @@ Swiper.propTypes = {
 
 Swiper.defaultProps = {
   index: 0,
-  threshold: 25,
+  threshold: 65,
   onMomentumScrollEnd: () => {},
   scrollDurationMs: 250,
   renderPagination: null,
