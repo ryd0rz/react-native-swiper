@@ -165,6 +165,12 @@ class Swiper extends React.Component {
     this.autoplay();
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.index !== nextProps.index && nextProps.index !== this.state.index) {
+      this.scrollTo(nextProps.index, false);
+    }
+  }
+
   componentWillUnmount() {
     this.state.scrollValue.removeAllListeners();
   }
@@ -174,8 +180,8 @@ class Swiper extends React.Component {
     const { vx } = gestureState;
 
     const newIndex = this.updateIndex(this.state.index, vx, relativeGestureDistance);
-    
-    this.scrollTo(newIndex);
+
+    this.scrollTo(newIndex, false);
   }
 
   onReleasePanResponderV(e, gestureState) {
@@ -184,7 +190,7 @@ class Swiper extends React.Component {
 
     const newIndex = this.updateIndex(this.state.index, vy, relativeGestureDistance);
 
-    this.scrollTo(newIndex);
+    this.scrollTo(newIndex, false);
   }
 
   onPanResponderTerminateV(e, gestureState) {
@@ -193,11 +199,11 @@ class Swiper extends React.Component {
 
     const newIndex = this.updateIndex(this.state.index, vy, relativeGestureDistance);
 
-    this.scrollTo(newIndex);
+    this.scrollTo(newIndex, false);
   }
 
   onMoveShouldSetPanResponderH(e, gestureState) {
-    const { threshold, scrollEnabled, responderTaken } = this.props;
+    const { scrollEnabled, responderTaken } = this.props;
 
     if (!scrollEnabled || responderTaken()) {
       return false;
@@ -302,19 +308,28 @@ class Swiper extends React.Component {
         if (!this.props.disableRightNavigation) {
           return index - 1;
         } else if (this.props.shakeSwipedDisabledNavigation) {
-          
+          // TODO: callback for spring animation
         }
       }
     }
     return index;
   }
 
-  scrollTo(pageNumber) {
-    //    const newPageNumber = Math.max(0, Math.min(pageNumber, this.props.children.length - 1));
-    if (this.props.loop || (pageNumber >= 0 && pageNumber < this.state.total)) {
+  scrollTo(pageNumber, forceScroll) {
+    // const newPageNumber = Math.max(0, Math.min(pageNumber, this.props.children.length - 1));
+    if (this.props.loop || (pageNumber >= 0 && pageNumber < this.state.total) || forceScroll) {
       const newPageNumber = pageNumber >= 0 ? pageNumber % this.state.total : this.props.children.length - 1;
-      this.setState({
-        index: newPageNumber
+      const oldPageNumber = this.state.index;
+      this.setState({ index: newPageNumber }, () => {
+        if (!forceScroll && this.props.disableLeftNavigation && oldPageNumber < newPageNumber) {
+          setTimeout(() => {
+            this.scrollTo(oldPageNumber, true);
+          }, (this.props.scrollDurationMs / 2));
+        } else if (!forceScroll && this.props.disableRightNavigation && oldPageNumber < newPageNumber) {
+          setTimeout(() => {
+            this.scrollTo(oldPageNumber, true);
+          }, (this.props.scrollDurationMs / 2));
+        }
       });
 
       Animated.timing(this.state.scrollValue, { toValue: newPageNumber, duration: this.props.scrollDurationMs }).start();
@@ -326,7 +341,7 @@ class Swiper extends React.Component {
   }
 
   scrollBy(indexOffset) {
-    this.scrollTo(this.state.index + indexOffset);
+    this.scrollTo((this.state.index + indexOffset), false);
   }
 
   autoplay() {
@@ -467,7 +482,7 @@ class Swiper extends React.Component {
 
     return (
       <View
-        style={styles.container}
+        style={Object.assign(styles.container, this.props.containerStlyes)}
       >
         <Animated.View
           {...this.panResponder.panHandlers}
@@ -491,9 +506,10 @@ Swiper.propTypes = {
   autoplayTimeout: React.PropTypes.number,
   buttonWrapperStyle: React.PropTypes.object,
   children: React.PropTypes.node.isRequired,
+  containerStlyes: React.PropTypes.object,
   disableLeftNavigation: React.PropTypes.bool,
-  disableRightNavigation: React.PropTypes.bool,
   disableLeftSwipe: React.PropTypes.bool,
+  disableRightNavigation: React.PropTypes.bool,
   disableRightSwipe: React.PropTypes.bool,
   dot: React.PropTypes.element,
   horizontal: React.PropTypes.bool,
@@ -531,7 +547,9 @@ Swiper.defaultProps = {
   renderPagination: null,
   onScrollBeginDrag: () => {},
   scrollEnabled: true,
-  responderTaken: () => { return false; },
+  responderTaken: () => {
+    return false;
+  },
   pageWidth: windowWidth,
   pageHeight: windowHeight,
   horizontal: true,
