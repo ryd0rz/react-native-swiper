@@ -165,10 +165,13 @@ class Swiper extends React.Component {
     this.autoplay();
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.index !== nextProps.index && nextProps.index !== this.state.index) {
-      this.scrollTo(nextProps.index, false);
-    }
+  componentWillReceiveProps(nextProps, nextState) {
+    const totalChildren = Array.isArray(nextProps.children) ? nextProps.children.length || 1 : 0;
+    this.setState({ total: totalChildren }, () => {
+      if (this.props.index !== nextProps.index && nextProps.index !== this.state.index) {
+        this.scrollTo(nextProps.index, false);
+      }
+    });
   }
 
   componentWillUnmount() {
@@ -180,7 +183,7 @@ class Swiper extends React.Component {
     const { vx } = gestureState;
 
     const newIndex = this.updateIndex(this.state.index, vx, relativeGestureDistance);
-
+    
     this.scrollTo(newIndex, false);
   }
 
@@ -203,7 +206,7 @@ class Swiper extends React.Component {
   }
 
   onMoveShouldSetPanResponderH(e, gestureState) {
-    const { scrollEnabled, responderTaken } = this.props;
+    const { threshold, scrollEnabled, responderTaken } = this.props;
 
     if (!scrollEnabled || responderTaken()) {
       return false;
@@ -482,7 +485,7 @@ class Swiper extends React.Component {
 
     return (
       <View
-        style={Object.assign(styles.container, this.props.containerStlyes)}
+        style={styles.container}
       >
         <Animated.View
           {...this.panResponder.panHandlers}
@@ -506,10 +509,9 @@ Swiper.propTypes = {
   autoplayTimeout: React.PropTypes.number,
   buttonWrapperStyle: React.PropTypes.object,
   children: React.PropTypes.node.isRequired,
-  containerStlyes: React.PropTypes.object,
   disableLeftNavigation: React.PropTypes.bool,
-  disableLeftSwipe: React.PropTypes.bool,
   disableRightNavigation: React.PropTypes.bool,
+  disableLeftSwipe: React.PropTypes.bool,
   disableRightSwipe: React.PropTypes.bool,
   dot: React.PropTypes.element,
   horizontal: React.PropTypes.bool,
@@ -547,9 +549,7 @@ Swiper.defaultProps = {
   renderPagination: null,
   onScrollBeginDrag: () => {},
   scrollEnabled: true,
-  responderTaken: () => {
-    return false;
-  },
+  responderTaken: () => { return false; },
   pageWidth: windowWidth,
   pageHeight: windowHeight,
   horizontal: true,
