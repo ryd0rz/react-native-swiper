@@ -297,7 +297,7 @@ class Swiper extends React.Component {
     if (relativeGestureDistance < -distanceThreshold ||
         (relativeGestureDistance < 0 && vx <= -this.vxThreshold)) {
       if (!this.props.disableLeftSwipe) {
-        if (!this.props.disableLeftNavigation) {
+        if (!this.shouldDisableLeftNavigation(index)) {
           return index + 1;
         } else if (this.props.shakeSwipedDisabledNavigation) {
           // TODO: callback for spring animation
@@ -324,7 +324,7 @@ class Swiper extends React.Component {
       const newPageNumber = pageNumber >= 0 ? pageNumber % this.state.total : this.props.children.length - 1;
       const oldPageNumber = this.state.index;
       this.setState({ index: newPageNumber }, () => {
-        if (!forceScroll && this.props.disableLeftNavigation && oldPageNumber < newPageNumber) {
+        if (!forceScroll && this.shouldDisableLeftNavigation(oldPageNumber) && oldPageNumber < newPageNumber) {
           setTimeout(() => {
             this.scrollTo(oldPageNumber, true);
           }, (this.props.scrollDurationMs / 2));
@@ -383,6 +383,19 @@ class Swiper extends React.Component {
         {dots}
       </View>
     );
+  }
+
+  shouldDisableLeftNavigation(index) {
+    if (typeof this.props.disableLeftNavigation === 'boolean') {
+      return this.props.disableLeftNavigation;
+    }
+    if (this.props.disableLeftNavigation && Array.isArray(this.props.disableLeftNavigation)) {
+      if (this.props.disableLeftNavigation[index]) {
+        return this.props.disableLeftNavigation[index];
+      }
+      return false;
+    }
+    return false;
   }
 
   renderPagination() {
@@ -509,7 +522,7 @@ Swiper.propTypes = {
   autoplayTimeout: React.PropTypes.number,
   buttonWrapperStyle: React.PropTypes.object,
   children: React.PropTypes.node.isRequired,
-  disableLeftNavigation: React.PropTypes.bool,
+  disableLeftNavigation: React.PropTypes.any,
   disableRightNavigation: React.PropTypes.bool,
   disableLeftSwipe: React.PropTypes.bool,
   disableRightSwipe: React.PropTypes.bool,
