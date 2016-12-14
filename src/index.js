@@ -490,7 +490,6 @@ class Swiper extends React.Component {
     this.props.horizontal ? { transform: [{ translateX }] } : { transform: [{ translateY }] };
 
     const sceneContainerStyle = {
-      flex: 1,
       flexDirection: this.props.horizontal ? 'row' : 'column',
       width: this.props.horizontal ? this.props.pageWidth * this.props.children.length : null,
       height: this.props.horizontal ? null : this.props.pageHeight * this.props.children.length
