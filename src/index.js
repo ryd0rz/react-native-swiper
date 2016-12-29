@@ -146,6 +146,9 @@ class Swiper extends React.Component {
 
     if (props.horizontal) {
       this.panResponder = PanResponder.create({
+        onStartShouldSetPanResponder: () => {
+          return false;
+        },
         onMoveShouldSetPanResponder: this.onMoveShouldSetPanResponderH,
         onPanResponderRelease: this.onReleasePanResponderH,
         onPanResponderTerminate: this.onReleasePanResponderH,
@@ -213,7 +216,7 @@ class Swiper extends React.Component {
     }
 
     if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
-      if ((gestureState.dx < 0 && !this.props.disableLeftSwipe) || gestureState.dx > 0 && !this.props.disableRightSwipe) {
+      if (gestureState.dx < (-0.4 + -this.props.index) && !this.props.disableLeftSwipe || gestureState.dx > (0.4 + this.props.index) && !this.props.disableRightSwipe) {
         this.props.onScrollBeginDrag();
         return true;
       }
