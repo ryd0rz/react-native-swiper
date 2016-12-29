@@ -120,7 +120,7 @@ class Swiper extends React.Component {
 
     const offset = props.horizontal ? this.getScrollPageOffsetH() : this.getScrollPageOffsetV();
 
-    this.vxThreshold = Platform.os === 'ios' ? 0.5 : 0.0000001;
+    this.vxThreshold = Platform.os === 'ios' ? 0.5 : 0.03;
 
     const totalChildren = Array.isArray(props.children) ? props.children.length || 1 : 0;
 
