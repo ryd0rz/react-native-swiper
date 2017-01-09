@@ -215,7 +215,7 @@ class Swiper extends React.Component {
       return false;
     }
 
-    if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
+    if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 1) {
       if (gestureState.dx < (-0.4 + -this.props.index) && !this.props.disableLeftSwipe || gestureState.dx > (0.4 + this.props.index) && !this.props.disableRightSwipe) {
         this.props.onScrollBeginDrag();
         return true;
@@ -236,7 +236,7 @@ class Swiper extends React.Component {
       return false;
     }
 
-    if (Math.abs(gestureState.dy) > Math.abs(gestureState.dx)) {
+    if (Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 1) {
       this.props.onScrollBeginDrag();
       return true;
     }
