@@ -128,7 +128,8 @@ class Swiper extends React.Component {
       index: props.index,
       total: totalChildren,
       scrollValue: new Animated.Value(props.index),
-      dir: props.horizontal === false ? 'y' : 'x'
+      dir: props.horizontal === false ? 'y' : 'x',
+      disableLeftNavigation: props.disableLeftNavigation
     };
 
     this.state.scrollValue.setOffset(offset);
@@ -170,7 +171,7 @@ class Swiper extends React.Component {
 
   componentWillReceiveProps(nextProps, nextState) {
     const totalChildren = Array.isArray(nextProps.children) ? nextProps.children.length || 1 : 0;
-    this.setState({ total: totalChildren }, () => {
+    this.setState({ total: totalChildren, disableLeftNavigation: nextProps.disableLeftNavigation }, () => {
       if (this.props.index !== nextProps.index && nextProps.index !== this.state.index) {
         this.scrollTo(nextProps.index, false);
       }
@@ -389,12 +390,12 @@ class Swiper extends React.Component {
   }
 
   shouldDisableLeftNavigation(index) {
-    if (typeof this.props.disableLeftNavigation === 'boolean') {
-      return this.props.disableLeftNavigation;
+    if (typeof this.state.disableLeftNavigation === 'boolean') {
+      return this.state.disableLeftNavigation;
     }
-    if (this.props.disableLeftNavigation && Array.isArray(this.props.disableLeftNavigation)) {
-      if (this.props.disableLeftNavigation[index]) {
-        return this.props.disableLeftNavigation[index];
+    if (this.state.disableLeftNavigation && Array.isArray(this.state.disableLeftNavigation)) {
+      if (this.state.disableLeftNavigation[index]) {
+        return this.state.disableLeftNavigation[index];
       }
       return false;
     }
@@ -479,7 +480,7 @@ class Swiper extends React.Component {
     };
 
     const pages = this.props.children.map((page, index) => (
-      <View style={pageStyle} key={index}>{page}</View>));
+      <View style={pageStyle} key={`${index}`}>{page}</View>));
 
     const translateX = this.state.scrollValue.interpolate({
       inputRange: [0, 1], outputRange: [0, -this.props.pageWidth]
