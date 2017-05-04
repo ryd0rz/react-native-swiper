@@ -99,12 +99,6 @@ import reactMixin from 'react-mixin';
 
 const window = Dimensions.get('window');
 
-const windowWidth = window.width;
-const windowHeight = window.height;
-
-const vw = windowWidth / 100;
-const vh = windowHeight / 100;
-
 class Swiper extends React.Component {
 
   constructor(props) {
@@ -183,16 +177,15 @@ class Swiper extends React.Component {
   }
 
   onReleasePanResponderH(e, gestureState) {
-    const relativeGestureDistance = gestureState.dx / windowWidth;
+    const relativeGestureDistance = gestureState.dx / this.props.windowWidth;
     const { vx } = gestureState;
 
     const newIndex = this.updateIndex(this.state.index, vx, relativeGestureDistance);
-    
     this.scrollTo(newIndex, false);
   }
 
   onReleasePanResponderV(e, gestureState) {
-    const relativeGestureDistance = gestureState.dy / windowHeight;
+    const relativeGestureDistance = gestureState.dy / this.props.windowHeight;
     const { vy } = gestureState;
 
     const newIndex = this.updateIndex(this.state.index, vy, relativeGestureDistance);
@@ -201,7 +194,7 @@ class Swiper extends React.Component {
   }
 
   onPanResponderTerminateV(e, gestureState) {
-    const relativeGestureDistance = gestureState.dy / windowHeight;
+    const relativeGestureDistance = gestureState.dy / this.props.windowHeight;
     const { vy } = gestureState;
 
     const newIndex = this.updateIndex(this.state.index, vy, relativeGestureDistance);
@@ -276,21 +269,21 @@ class Swiper extends React.Component {
   }
 
   getScrollPageOffsetH() {
-    if (this.props.pageWidth === windowWidth) {
+    if (this.props.pageWidth === this.props.windowWidth) {
       return 0;
     }
-    const offsetWindowRatio = (windowWidth - this.props.pageWidth) / vw / 2 / 100;
-    const scaleToPageRatio = windowWidth / this.props.pageWidth;
+    const offsetWindowRatio = (this.props.windowWidth - this.props.pageWidth) / (this.props.windowWidth / 100) / 2 / 100;
+    const scaleToPageRatio = this.props.windowWidth / this.props.pageWidth;
 
     return -offsetWindowRatio * scaleToPageRatio;
   }
 
   getScrollPageOffsetV() {
-    if (this.props.pageHeight === windowHeight) {
+    if (this.props.pageHeight === this.props.windowHeight) {
       return 0;
     }
-    const offsetWindowRatio = (windowHeight - this.props.pageHeight) / vh / 2 / 100;
-    const scaleToPageRatio = windowHeight / this.props.pageHeight;
+    const offsetWindowRatio = (this.props.windowHeight - this.props.pageHeight) / (this.props.windowHeight / 100) / 2 / 100;
+    const scaleToPageRatio = this.props.windowHeight / this.props.pageHeight;
 
     return -offsetWindowRatio * scaleToPageRatio;
   }
@@ -462,7 +455,7 @@ class Swiper extends React.Component {
         pointerEvents="box-none"
         style={[
           styles.buttonWrapper,
-          { width: windowWidth, height: windowHeight },
+          { width: this.props.windowWidth, height: this.props.windowHeight },
           this.props.buttonWrapperStyle
         ]}
       >
@@ -499,19 +492,28 @@ class Swiper extends React.Component {
       height: this.props.horizontal ? null : this.props.pageHeight * this.props.children.length
     };
 
+    if (Platform.OS !== 'web') {
+      return (
+        <View
+          style={styles.container}
+        >
+          <Animated.View
+            {...this.panResponder.panHandlers}
+            style={[sceneContainerStyle, transform]}
+          >
+            {pages}
+          </Animated.View>
+          {this.props.showsPagination && this.renderPagination()}
+          {this.renderTitle()}
+          {this.props.showsButtons && this.renderButtons()}
+        </View>
+      );
+    }
     return (
       <View
         style={styles.container}
       >
-        <Animated.View
-          {...this.panResponder.panHandlers}
-          style={[sceneContainerStyle, transform]}
-        >
-          {pages}
-        </Animated.View>
-        {this.props.showsPagination && this.renderPagination()}
-        {this.renderTitle()}
-        {this.props.showsButtons && this.renderButtons()}
+        {pages[this.props.index]}
       </View>
     );
   }
@@ -548,7 +550,9 @@ Swiper.propTypes = {
   shakeSwipedDisabledNavigation: React.PropTypes.bool,
   showsButtons: React.PropTypes.bool,
   showsPagination: React.PropTypes.bool,
-  threshold: React.PropTypes.number
+  threshold: React.PropTypes.number,
+  windowHeight: React.PropTypes.number,
+  windowWidth: React.PropTypes.number
 };
 
 Swiper.defaultProps = {
@@ -565,9 +569,11 @@ Swiper.defaultProps = {
   renderPagination: null,
   onScrollBeginDrag: () => {},
   scrollEnabled: true,
-  responderTaken: () => { return false; },
-  pageWidth: windowWidth,
-  pageHeight: windowHeight,
+  responderTaken: () => {
+    return false;
+  },
+  pageWidth: window.width,
+  pageHeight: window.height,
   horizontal: true,
   loop: true,
   autoplay: true,
@@ -577,7 +583,9 @@ Swiper.defaultProps = {
   prevButton: null,
   nextButton: null,
   showsButtons: true,
-  showsPagination: false
+  showsPagination: false,
+  windowHeight: window.height,
+  windowWidth: window.width
 };
 
 reactMixin.onClass(Swiper, TimerMixin);
