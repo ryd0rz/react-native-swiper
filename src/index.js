@@ -104,6 +104,8 @@ class Swiper extends React.Component {
   constructor(props) {
     super(props);
 
+    this.props = props;
+
     this.onPanResponderMoveH = this.onPanResponderMoveH.bind(this);
     this.onMoveShouldSetPanResponderH = this.onMoveShouldSetPanResponderH.bind(this);
     this.onReleasePanResponderH = this.onReleasePanResponderH.bind(this);
@@ -125,6 +127,19 @@ class Swiper extends React.Component {
       dir: props.horizontal === false ? 'y' : 'x',
       disableLeftNavigation: props.disableLeftNavigation
     };
+
+    if (this.props.windowWidth === null) {
+      this.props.windowWidth = window.width;
+    }
+    if (this.props.windowHeight === null) {
+      this.props.windowHeight = window.height;
+    }
+    if (this.props.pageWidth === null) {
+      this.props.pageWidth = window.width;
+    }
+    if (this.props.pageHeight === null) {
+      this.props.pageHeight = window.height;
+    }
 
     this.state.scrollValue.setOffset(offset);
 
@@ -165,7 +180,7 @@ class Swiper extends React.Component {
 
   componentWillReceiveProps(nextProps, nextState) {
     const totalChildren = Array.isArray(nextProps.children) ? nextProps.children.length || 1 : 0;
-    this.setState({ total: totalChildren, disableLeftNavigation: nextProps.disableLeftNavigation }, () => {
+    this.setState({ index: nextProps.index, total: totalChildren, disableLeftNavigation: nextProps.disableLeftNavigation }, () => {
       if (this.props.index !== nextProps.index && nextProps.index !== this.state.index) {
         this.scrollTo(nextProps.index, false);
       }
@@ -425,7 +440,7 @@ class Swiper extends React.Component {
     }
 
     return (
-      <TouchableOpacity onPress={() => button !== null && this.scrollBy.bind(this, 1)}>
+      <TouchableOpacity onPress={(this.props.nextButtonCb !== null) ? this.props.nextButtonCb.bind(this) : this.scrollBy.bind(this, 1)}>
         <View>
           {button}
         </View>
@@ -441,7 +456,7 @@ class Swiper extends React.Component {
     }
 
     return (
-      <TouchableOpacity onPress={() => button !== null && this.scrollBy.bind(this, -1)}>
+      <TouchableOpacity onPress={(this.props.prevButtonCb !== null) ? this.props.prevButtonCb.bind(this) : this.scrollBy.bind(this, -1)}>
         <View>
           {button}
         </View>
@@ -455,7 +470,7 @@ class Swiper extends React.Component {
         pointerEvents="box-none"
         style={[
           styles.buttonWrapper,
-          { width: this.props.windowWidth, height: this.props.windowHeight },
+          { width: this.props.pageWidth, height: this.props.pageHeight },
           this.props.buttonWrapperStyle
         ]}
       >
@@ -466,14 +481,20 @@ class Swiper extends React.Component {
   }
 
   render() {
-    const pageStyle = {
-      width: this.props.pageWidth,
-      height: this.props.pageHeight,
-      backgroundColor: 'transparent'
-    };
-
-    const pages = this.props.children.map((page, index) => (
-      <View style={pageStyle} key={`${index}`}>{page}</View>));
+    const pages = this.props.children.map((page, index) => {
+      const pageStyle = {
+        width: this.props.pageWidth,
+        height: this.props.pageHeight,
+        backgroundColor: 'transparent'
+      };
+      if (Platform.OS === 'web') {
+        pageStyle.display = (this.state.index === index) ? 'block' : 'none';
+        pageStyle.overflow = 'scroll';
+      }
+      return (
+        <View style={pageStyle} key={`${index}`}>{page}</View>
+      );
+    });
 
     const translateX = this.state.scrollValue.interpolate({
       inputRange: [0, 1], outputRange: [0, -this.props.pageWidth]
@@ -513,7 +534,12 @@ class Swiper extends React.Component {
       <View
         style={styles.container}
       >
-        {pages[this.props.index]}
+        <View style={sceneContainerStyle}>
+          {pages}
+        </View>
+        {this.props.showsPagination && this.renderPagination()}
+        {this.renderTitle()}
+        {this.props.showsButtons && this.renderButtons()}
       </View>
     );
   }
@@ -536,6 +562,7 @@ Swiper.propTypes = {
   index: React.PropTypes.number,
   loop: React.PropTypes.bool,
   nextButton: React.PropTypes.element,
+  nextButtonCb: React.PropTypes.func,
   onMomentumScrollEnd: React.PropTypes.func,
   onMomentumTouchEnd: React.PropTypes.func,
   onScrollBeginDrag: React.PropTypes.func,
@@ -543,6 +570,7 @@ Swiper.propTypes = {
   pageWidth: React.PropTypes.number,
   paginationStyle: React.PropTypes.object,
   prevButton: React.PropTypes.element,
+  prevButtonCb: React.PropTypes.func,
   renderPagination: React.PropTypes.func,
   responderTaken: React.PropTypes.func,
   scrollDurationMs: React.PropTypes.number,
@@ -581,7 +609,9 @@ Swiper.defaultProps = {
   autoplayTimeout: 2.5,
   buttonWrapperStyle: {},
   prevButton: null,
+  prevButtonCb: null,
   nextButton: null,
+  nextButtonCb: null,
   showsButtons: true,
   showsPagination: false,
   windowHeight: window.height,
