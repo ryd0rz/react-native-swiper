@@ -488,7 +488,7 @@ class Swiper extends React.Component {
         backgroundColor: 'transparent'
       };
       if (Platform.OS === 'web') {
-        pageStyle.display = (this.state.index === index) ? 'block' : 'none';
+        pageStyle.display = (this.state.index === index) ? 'flex' : 'none';
         pageStyle.overflow = 'scroll';
       }
       return (
