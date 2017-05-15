@@ -114,8 +114,6 @@ class Swiper extends React.Component {
     this.onMoveShouldSetPanResponderV = this.onMoveShouldSetPanResponderV.bind(this);
     this.onReleasePanResponderV = this.onReleasePanResponderV.bind(this);
 
-    const offset = props.horizontal ? this.getScrollPageOffsetH() : this.getScrollPageOffsetV();
-
     this.vxThreshold = Platform.os === 'ios' ? 0.5 : 0.03;
 
     const totalChildren = Array.isArray(props.children) ? props.children.length || 1 : 0;
@@ -125,21 +123,14 @@ class Swiper extends React.Component {
       total: totalChildren,
       scrollValue: new Animated.Value(props.index),
       dir: props.horizontal === false ? 'y' : 'x',
-      disableLeftNavigation: props.disableLeftNavigation
+      disableLeftNavigation: props.disableLeftNavigation,
+      pageWidth: (this.props.windowWidth !== null) ? this.props.pageWidth : window.width,
+      pageHeight: (this.props.pageHeight !== null) ? this.props.pageHeight : window.height,
+      windowWidth: (this.props.windowWidth !== null) ? this.props.windowWidth : window.width,
+      windowHeight: (this.props.windowHeight !== null) ? this.props.windowHeight : window.height
     };
 
-    if (this.props.windowWidth === null) {
-      this.props.windowWidth = window.width;
-    }
-    if (this.props.windowHeight === null) {
-      this.props.windowHeight = window.height;
-    }
-    if (this.props.pageWidth === null) {
-      this.props.pageWidth = window.width;
-    }
-    if (this.props.pageHeight === null) {
-      this.props.pageHeight = window.height;
-    }
+    const offset = props.horizontal ? this.getScrollPageOffsetH() : this.getScrollPageOffsetV();
 
     this.state.scrollValue.setOffset(offset);
 
@@ -192,7 +183,7 @@ class Swiper extends React.Component {
   }
 
   onReleasePanResponderH(e, gestureState) {
-    const relativeGestureDistance = gestureState.dx / this.props.windowWidth;
+    const relativeGestureDistance = gestureState.dx / this.state.windowWidth;
     const { vx } = gestureState;
 
     const newIndex = this.updateIndex(this.state.index, vx, relativeGestureDistance);
@@ -200,7 +191,7 @@ class Swiper extends React.Component {
   }
 
   onReleasePanResponderV(e, gestureState) {
-    const relativeGestureDistance = gestureState.dy / this.props.windowHeight;
+    const relativeGestureDistance = gestureState.dy / this.state.windowHeight;
     const { vy } = gestureState;
 
     const newIndex = this.updateIndex(this.state.index, vy, relativeGestureDistance);
@@ -209,7 +200,7 @@ class Swiper extends React.Component {
   }
 
   onPanResponderTerminateV(e, gestureState) {
-    const relativeGestureDistance = gestureState.dy / this.props.windowHeight;
+    const relativeGestureDistance = gestureState.dy / this.state.windowHeight;
     const { vy } = gestureState;
 
     const newIndex = this.updateIndex(this.state.index, vy, relativeGestureDistance);
@@ -255,7 +246,7 @@ class Swiper extends React.Component {
 
   onPanResponderMoveH(e, gestureState) {
     const dx = gestureState.dx;
-    const offsetX = -dx / this.props.pageWidth + this.state.index;
+    const offsetX = -dx / this.state.pageWidth + this.state.index;
     if ((gestureState.dx < 0 && this.props.disableLeftSwipe !== true) || gestureState.dx > 0 && this.props.disableRightSwipe !== true) {
       if (offsetX >= 0 && offsetX < this.props.children.length - 1) {
         this.state.scrollValue.setValue(offsetX);
@@ -265,7 +256,7 @@ class Swiper extends React.Component {
 
   onPanResponderMoveV(e, gestureState) {
     const dy = gestureState.dy;
-    const offsetY = -dy / this.props.pageHeight + this.state.index;
+    const offsetY = -dy / this.state.pageHeight + this.state.index;
 
     if (offsetY >= 0 && offsetY < this.props.children.length - 1) {
       this.state.scrollValue.setValue(offsetY);
@@ -284,21 +275,21 @@ class Swiper extends React.Component {
   }
 
   getScrollPageOffsetH() {
-    if (this.props.pageWidth === this.props.windowWidth) {
+    if (this.state.pageWidth === this.state.windowWidth) {
       return 0;
     }
-    const offsetWindowRatio = (this.props.windowWidth - this.props.pageWidth) / (this.props.windowWidth / 100) / 2 / 100;
-    const scaleToPageRatio = this.props.windowWidth / this.props.pageWidth;
+    const offsetWindowRatio = (this.state.windowWidth - this.state.pageWidth) / (this.state.windowWidth / 100) / 2 / 100;
+    const scaleToPageRatio = this.state.windowWidth / this.state.pageWidth;
 
     return -offsetWindowRatio * scaleToPageRatio;
   }
 
   getScrollPageOffsetV() {
-    if (this.props.pageHeight === this.props.windowHeight) {
+    if (this.state.pageHeight === this.state.windowHeight) {
       return 0;
     }
-    const offsetWindowRatio = (this.props.windowHeight - this.props.pageHeight) / (this.props.windowHeight / 100) / 2 / 100;
-    const scaleToPageRatio = this.props.windowHeight / this.props.pageHeight;
+    const offsetWindowRatio = (this.state.windowHeight - this.state.pageHeight) / (this.state.windowHeight / 100) / 2 / 100;
+    const scaleToPageRatio = this.state.windowHeight / this.state.pageHeight;
 
     return -offsetWindowRatio * scaleToPageRatio;
   }
@@ -470,7 +461,7 @@ class Swiper extends React.Component {
         pointerEvents="box-none"
         style={[
           styles.buttonWrapper,
-          { width: this.props.pageWidth, height: this.props.pageHeight },
+          { width: this.state.pageWidth, height: this.state.pageHeight },
           this.props.buttonWrapperStyle
         ]}
       >
@@ -483,8 +474,8 @@ class Swiper extends React.Component {
   render() {
     const pages = this.props.children.map((page, index) => {
       const pageStyle = {
-        width: this.props.pageWidth,
-        height: this.props.pageHeight,
+        width: this.state.pageWidth,
+        height: this.state.pageHeight,
         backgroundColor: 'transparent'
       };
       if (Platform.OS === 'web') {
@@ -497,11 +488,11 @@ class Swiper extends React.Component {
     });
 
     const translateX = this.state.scrollValue.interpolate({
-      inputRange: [0, 1], outputRange: [0, -this.props.pageWidth]
+      inputRange: [0, 1], outputRange: [0, -this.state.pageWidth]
     });
 
     const translateY = this.state.scrollValue.interpolate({
-      inputRange: [0, 1], outputRange: [0, -this.props.pageHeight]
+      inputRange: [0, 1], outputRange: [0, -this.state.pageHeight]
     });
 
     const transform =
@@ -509,8 +500,8 @@ class Swiper extends React.Component {
 
     const sceneContainerStyle = {
       flexDirection: this.props.horizontal ? 'row' : 'column',
-      width: this.props.horizontal ? this.props.pageWidth * this.props.children.length : null,
-      height: this.props.horizontal ? null : this.props.pageHeight * this.props.children.length
+      width: this.props.horizontal ? this.state.pageWidth * this.props.children.length : null,
+      height: this.props.horizontal ? null : this.state.pageHeight * this.props.children.length
     };
 
     if (Platform.OS !== 'web') {
