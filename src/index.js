@@ -106,6 +106,20 @@ class Swiper extends React.Component {
 
     this.props = props;
 
+    const totalChildren = Array.isArray(props.children) ? props.children.length || 1 : 0;
+
+    this.state = {
+      index: props.index,
+      total: totalChildren,
+      scrollValue: new Animated.Value(props.index),
+      dir: props.horizontal === false ? 'y' : 'x',
+      disableLeftNavigation: props.disableLeftNavigation,
+      pageWidth: (this.props.pageWidth !== null) ? this.props.pageWidth : window.width,
+      pageHeight: (this.props.pageHeight !== null) ? this.props.pageHeight : window.height,
+      windowWidth: (this.props.windowWidth !== null) ? this.props.windowWidth : window.width,
+      windowHeight: (this.props.windowHeight !== null) ? this.props.windowHeight : window.height
+    };
+
     this.onPanResponderMoveH = this.onPanResponderMoveH.bind(this);
     this.onMoveShouldSetPanResponderH = this.onMoveShouldSetPanResponderH.bind(this);
     this.onReleasePanResponderH = this.onReleasePanResponderH.bind(this);
@@ -115,20 +129,6 @@ class Swiper extends React.Component {
     this.onReleasePanResponderV = this.onReleasePanResponderV.bind(this);
 
     this.vxThreshold = Platform.os === 'ios' ? 0.5 : 0.03;
-
-    const totalChildren = Array.isArray(props.children) ? props.children.length || 1 : 0;
-
-    this.state = {
-      index: props.index,
-      total: totalChildren,
-      scrollValue: new Animated.Value(props.index),
-      dir: props.horizontal === false ? 'y' : 'x',
-      disableLeftNavigation: props.disableLeftNavigation,
-      pageWidth: (this.props.windowWidth !== null) ? this.props.pageWidth : window.width,
-      pageHeight: (this.props.pageHeight !== null) ? this.props.pageHeight : window.height,
-      windowWidth: (this.props.windowWidth !== null) ? this.props.windowWidth : window.width,
-      windowHeight: (this.props.windowHeight !== null) ? this.props.windowHeight : window.height
-    };
 
     const offset = props.horizontal ? this.getScrollPageOffsetH() : this.getScrollPageOffsetV();
 
